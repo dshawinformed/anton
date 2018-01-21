@@ -10,15 +10,45 @@ exports.register = function(server, options, next) {
   var io = require('socket.io')(server.listener);
   io.on('connection', function (socket) {
   }); 
-  
+
   server.route({
-    path: '/sendOrder',
+    path: '/seeorder',
+    method: 'GET',
+    handler: function (request, reply) {
+      var fs = require('fs'),
+        path = require('path'),    
+        filePath = path.join(__dirname, '/../../message.txt');
+
+      return fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
+        if (!err) {
+          console.log('received data: ' + data);
+          let k = data.split("\n");
+          console.log(k);
+          let art = "";
+          for(let i=0;i<k.length;i++){
+            art+=k[i]+'|\r\n';
+          }
+          reply.view('screen',{data:art});
+        } else {
+          console.log(err);
+        }
+      });
+      
+    }
+  });
+
+  server.route({
+    path: '/order123',
     method: 'GET',
     handler: function (request, reply) {
       console.log('request of sendOrder',request.query);
-      k=request.query.item;
-        io.sockets.emit('orderReceived', k); 
-      reply('orders received');
+      var fs = require('fs');
+      fs.appendFile('message.txt', '\n'+request.query.item, function (err) {
+        if (err) throw err;
+        console.log('Saved!');
+      }); 
+      //io.sockets.emit('orderReceived', request.query.item);
+      reply('hello');
     }
   });
 

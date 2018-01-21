@@ -390,6 +390,8 @@ const conversationReply = function(entityIntentResponse){
     text: '',
     animation: 'idle'
   }
+      let flag=0;
+  
   switch(entityIntentResponse.intent){
     case 'Utilities.Help': answer = { 
       cards: false,
@@ -421,7 +423,8 @@ const conversationReply = function(entityIntentResponse){
         cards: false,
         text: order.text(entityIntentResponse.entities),
         animation: "idle"
-      }; 
+      };
+      flag=1;
       break;
     case 'None': answer = {
       cards: false,
@@ -474,6 +477,36 @@ const conversationReply = function(entityIntentResponse){
       cards: false,
       text: "Error in Intent conversation"
     }
+  }
+  if (flag ==1){
+    let ans_monitor='Order: ';
+    for (let i=0;i<dishesOrdered.length;i++){
+      ans_monitor+= dishesOrdered[i].name + ' ,';
+    }
+    for(let i=0;i<restaurantDuty.length; i++){
+      ans_monitor+= restaurantDuty[i]+' ,';
+    }
+    ans_monitor+=' at table 3';
+       params = {
+         'item': ans_monitor 
+    }
+    let url = "http://localhost:3000/order123";
+    var rp = require('request-promise');
+    var luisRequest1 = {
+      uri: url,
+      qs: params,
+      headers: {
+        'User-Agent': 'Request-Promise'
+      },
+      json: true // Automatically parses the JSON string in the response
+    };
+    rp(luisRequest1)
+      .then(function (data) {
+        console.log(data);
+      })
+      .catch(function (err) {
+        console.log('error in LUIS API');
+      }) 
   }
   return answer;
 
@@ -594,7 +627,7 @@ const make_card = function(dishName){
 
 let sorted_dishes = dishes.sort(function(a, b){
       return b.rating - a.rating;
-    });
+});
 const bestInCategory = {
   text: function(entities){
     if (entities.length == 0){
